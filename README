@@ -22,6 +22,44 @@ Dependencies
 python3, theano, scipy, PIL, numpy, matplotlib, six.moves.cPickle
 You can install these packages through conda
 
+Installing miniconda
+---------------------
+You can download the .sh file for miniconda from here : https://conda.io/miniconda.html
+Download it for python3, the code hasn't been checked on earlier versions of python, 
+although it might work as well.
+
+Open terminal window
+
+After downloading the .sh file. Change the permission of the file to give it running permission:
+chmod +x <filenam>
+Eg : chmod +x Miniconda3-latest-Linux-x86_64.sh 
+
+Now run the installation
+./filename
+Eg : ./Miniconda3-latest-Linux-x86_64.sh 
+
+Now follow the prompts in the terminal
+
+
+Installing other packages through conda
+----------------------------------------
+Open terminal :
+
+Theano :
+conda install theano
+
+PIL : 
+conda install pillow
+
+Numpy : 
+conda install numpy
+
+Matplotlib : 
+conda install matplotlib 
+
+Pickle : 
+conda install six 
+
 
 Running code
 =============
