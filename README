@@ -1,0 +1,321 @@
+Data&Data challenge
+====================================
+MNIST and CIFAR-10 classification
+
+
+Author
+=======
+Shivam Mittal
+Pre-final year, B.Tech Computer Science and Engineering, IIT Ropar
+Email : 2015csb1032@iitrpr.ac.in, shivammittal77@gmail.com
+Phone : +91-9888927245, +91-9899461223
+
+
+Credits
+========
+I built upon the LeNet architecture, and part of the codes were taken 
+from deeplearning.net
+
+
+Dependencies
+=============
+python3, theano, scipy, PIL, numpy, matplotlib, six.moves.cPickle
+You can install these packages through conda
+
+
+Running code
+=============
+
+Before running your code, make sure the data files are present.
+The data should be present in a folder named "data", and this folder should be on the 
+same level as the folder containing the code.
+
+Basically your file directory structure should be like this (these files are necessary):
+
+  |
+  |- code  
+      |- cifar.py
+      |- conv_layers.py
+      |- hidden_layer.py
+      |- loading_data.py
+      |- logistic_regression.py
+      |- main.py
+      |- mnist.py
+
+  |- data
+      |- cifar-10-batches-py
+          |- data_batch_1
+          |- data_batch_2
+          |- data_batch_3
+          |- data_batch_4
+          |- data_batch_1
+          |- test_batch
+      |- mnist.pkl.gz
+
+Now open terminal (make sure all the dependencies are install), run:
+
+$ python3 code/main.py mnist (For running the mnist classifier)
+$ python3 code/main.py cifar (For running the cifar classifier)
+
+
+Design Choices / Architecture overview
+========================================
+
+Note : A short network (3 layers) was chosen because of limited computation resource at the moment (No GPU). 
+The GPU in the central lab were busy, if some GPU would have been available, 
+then a more deeper and a network giving better accuracy would have been made.
+
+But still, the network with 3 layers is giving good accuracy (Test accuracies : MNIST - 99.248798, CIFAR-10 - 76.5625 )
+because we have used various techniques such as adaptive learning rate, momentum, data augmentation techniques and also
+other techniques such as data standardization, L2 regularization(to provent overfitting) have been used.
+I have tuned the hyperparameters so that the model gives good accuracy.
+I will briedly decribe the architecture overview and design choices.
+
+
+MNIST classification
+=====================
+
+Result obtained
+----------------
+99.248798% test accuracy
+
+
+Architecture
+-----------------
+
+Input image :
+Size = (28*28*1)
+
+1st Convulational layer :
+One filter size = (5x5x1)
+Stide = 1
+Number of filters = 20
+Output size = (28-5+1 , 28-5+1, 20) = (24, 24, 20)
+
+1st Maxpool Layer :
+Pooling size = (2*2)
+Stride = 2
+Output size = (24/2, 24/2, 20) = (12, 12, 20)
+
+RELU : 
+Activation (provides non-linearity and is efficient)
+
+2nd Convulational layer :
+One filter size = (5x5x20)
+Stide = 1
+Number of filters = 50
+Output size = (12-5+1, 12-5+1, 50) = (8, 8, 50)
+
+2nd Maxpool Layer :
+Pooling size = (2*2)
+Stride = 2
+Output size = (8/2, 8/2, 50) = (4, 4, 50)
+
+RELU : 
+Activation (provides non-linearity and is efficient)
+
+3rd Convulational layer :
+One filter size = (3x3x50)
+Stide = 1
+Number of filters = 60
+Output size = (4-3+1, 4-3+1, 60) = (2, 2, 60)
+
+RELU : 
+Activation (provides non-linearity and is efficient)
+
+Flatten layer : 
+Output size = (2*2*60) = (240)
+
+Fully connected hidden layer :
+Input = 240
+Output = 500
+
+Tanh activation :
+Make the network less likely to get stuck during training
+
+Logistic regression layer:
+Input = 500
+Output = 10
+
+
+Mini-batch stochastic gradient descent
+---------------------------------------
+Using batch size = 32
+The impact of B is mostly computational, i.e., larger B yield faster computation (with appropriate
+implementations) but requires visiting more examples in order to reach the same error,
+since there are less updates per epoch. In theory, this hyper-parameter should impact training
+time and not so much test performance.
+The value 32 makes the network converge faster as seen experimentally.
+
+
+Early stopping criteria 
+---------------------------
+For training, we are using a patience value of 50000 and a patience increase of 2.
+These hyperparameters are tuned in a such a way, that they ensure that neither the 
+network trains too long when we know no more learning is taking place (the accuracy
+being is achieved is less than best). But the patience is large enough to make
+the network be able to escape any local minima.
+
+
+L2 regularization
+------------------
+Using coefficient = 0.0001
+Using L2 regularization penalizes the complex model by taking the sum of square
+of the parameters. So a simpler model is preffered over a complex model, and
+this reduces overfitting.
+
+
+Activation functions
+----------------------
+RELU functions have been used as activation for all the convulutional layers,
+because they are easy to compute and provides non-linearity.
+The tanh functions have been used for hidden layer because it makes the 
+network less likely to get stuck during training.
+Which activation function works best for which layer is seen by 
+empirical observation.
+
+
+Adaptive learning rate
+--------------------------
+Initial learning rate = 0.1
+Typical values for a neural network with standardized inputs
+ are less than 1 and greater than 10−6 .
+The initial learning rate has been chosen by hyperparameter tuning.
+
+After every 10 epochs the learning rate is decreased by 5%.
+and
+After every epoch :
+    If the validation error decreases : We increase the learning rate by 1%
+    If the validation error increases : We decrease the learning rate by 50%
+This choice of adaptive learning rate schedule works very well with data
+as seen experimentally. Although after the network isn't able to learn more,
+the error may jump to very high, but before that saturation point, this learning
+rate strategy is able to make the network learn weights to give good results.
+
+
+
+
+CIFAR-10 classification
+==========================
+
+Result obtained
+---------------
+76.5625% test accuracy
+
+
+Architecture
+-----------------
+
+Input image :
+Size = (32*32*3)
+
+1st Convulational layer :
+One filter size = (5x5x3)
+Stide = 1
+Number of filters = 16
+Output size = (32, 32, 16) (No size reduction because of padding)
+
+1st Maxpool Layer :
+Pooling size = (2*2)
+Stride = 2
+Output size = (32/2, 32/2, 16) = (16, 16, 16)
+
+RELU : 
+Activation (provides non-linearity and is efficient)
+
+2nd Convulational layer :
+One filter size = (5x5x16)
+Stide = 1
+Number of filters = 20
+Output size = (16, 16, 20) (No size reduction because of padding)
+
+2nd Maxpool Layer :
+Pooling size = (2*2)
+Stride = 2
+Output size = (16/2, 16/2, 20) = (8, 8, 20)
+
+RELU : 
+Activation (provides non-linearity and is efficient)
+
+3rd Convulational layer :
+One filter size = (5x5x20)
+Stide = 1
+Number of filters = 20
+Output size = (8, 8, 20) (No size reduction because of padding)
+
+3rd Maxpool Layer :
+Pooling size = (2*2)
+Stride = 2
+Output size = (8/2, 8/2, 20) = (4, 4, 20)
+
+RELU : 
+Activation (provides non-linearity and is efficient)
+
+Flatten layer : 
+Output size = (4*4*20) = (320)
+
+Fully connected hidden layer :
+Input = 320
+Output = 500
+
+Tanh activation :
+Make the network less likely to get stuck during training
+
+Logistic regression layer:
+Input = 500
+Output = 5 (Classifying only 5 classes)
+
+
+
+Data augmentation
+-----------------
+Random rotations having rotation angle randomly chosen between -30 and 30 degrees.
+It makes network rotational invariant.
+Zooming image and cropping to obtain the center. Makes network scale invariant, and
+translational invariant too.
+Data augmentation makes our model more robust and prevents overfitting.
+
+
+Momentum
+----------
+We are using a initial momentum of 0.9 and increase it by 5%
+after every 10 epochs.
+This is done to make the updates proportional to the smoothed gradient estimator
+instead of the instantaneous gradient g. The idea is that it removes some 
+of the noise and oscillations that gradient descent has, in particular
+in the directions of high curvature of the loss function
+
+
+Adaptive learning rate
+--------------------------
+Initial learning rate = 0.001
+The initial learning rate has been chosen by hyperparameter tuning.
+
+After every 10 epochs the learning rate is decreased by 5%.
+and
+After every epoch :
+    If the validation error decreases : We increase the learning rate by 1%
+    If the validation error increases : We decrease the learning rate by 50%
+This choice of adaptive learning rate schedule works very well with data
+as seen experimentally. Although after the network isn't able to learn more,
+the error may jump to very high, but before that saturation point, this learning
+rate strategy is able to make the network learn weights to give good results.
+
+
+Mini-batch stochastic gradient descent
+---------------------------------------
+(same parameters and explanation as MNIST model)
+
+
+Early stopping criteria 
+---------------------------
+(same parameters and explanation as MNIST model)
+
+
+Activation functions
+----------------------
+(same parameters and explanation as MNIST model)
+
+
+The hyperparameters which have not been explained in detail were also 
+chosen by empirical experimentation.
